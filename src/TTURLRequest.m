@@ -146,13 +146,18 @@ static NSString* kStringBoundary = @"3i2ndDfv2rTHiSisAbouNdArYfORhtTPEefj3q2f";
     dataUsingEncoding:NSUTF8StringEncoding]];
   
   for (id key in [_parameters keyEnumerator]) {
-    NSString* value = [_parameters valueForKey:key];
+    NSObject* value = [_parameters valueForKey:key];
     if (![value isKindOfClass:[UIImage class]]) {
       [body appendData:[beginLine dataUsingEncoding:NSUTF8StringEncoding]];        
       [body appendData:[[NSString
         stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"\r\n\r\n", key]
           dataUsingEncoding:_charsetForMultipart]];
-      [body appendData:[value dataUsingEncoding:_charsetForMultipart]];
+        // BEGIN vAuto change - cdonnelly - 2010-01-13
+        // convert values to string; for nulls, add empty string (0 bytes)
+        if (value == nil || value == [NSNull null])
+            continue;
+        [body appendData:[[value description] dataUsingEncoding:_charsetForMultipart]];
+        // END vAuto change - cdonnelly - 2010-01-13
     }
   }
 
