@@ -1,5 +1,5 @@
 //
-// Copyright 2009 Facebook
+// Copyright 2009-2010 Facebook
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,16 +24,19 @@
 #import "Three20/TTURLResponse.h"
 #import "Three20/TTURLCache.h"
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
   
 static const NSInteger kLoadMaxRetries = 2;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 @implementation TTRequestLoader
 
-@synthesize URL = _URL, requests = _requests, cacheKey = _cacheKey,
-  cachePolicy = _cachePolicy, cacheExpirationAge = _cacheExpirationAge;
+@synthesize URL                = _URL;
+@synthesize requests           = _requests;
+@synthesize cacheKey           = _cacheKey;
+@synthesize cachePolicy        = _cachePolicy;
+@synthesize cacheExpirationAge = _cacheExpirationAge;
 
 - (id)initForRequest:(TTURLRequest*)request queue:(TTURLRequestQueue*)queue {
   if (self = [super init]) {
@@ -51,7 +54,9 @@ static const NSInteger kLoadMaxRetries = 2;
   }
   return self;
 }
- 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)dealloc {
   [_connection cancel];
   TT_RELEASE_SAFELY(_connection);
@@ -63,7 +68,7 @@ static const NSInteger kLoadMaxRetries = 2;
   [super dealloc];
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 - (void)connectToURL:(NSURL*)URL {
   TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"Connecting to %@", _URL);
@@ -75,6 +80,8 @@ static const NSInteger kLoadMaxRetries = 2;
   _connection = [[NSURLConnection alloc] initWithRequest:URLRequest delegate:self];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)cancel {
   NSArray* requestsToCancel = [_requests copy];
   for (id request in requestsToCancel) {
@@ -83,6 +90,8 @@ static const NSInteger kLoadMaxRetries = 2;
   [requestsToCancel release];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSError*)processResponse:(NSHTTPURLResponse*)response data:(id)data {
   for (TTURLRequest* request in _requests) {
     NSError* error = [request.response request:request processResponse:response data:data];
@@ -93,6 +102,8 @@ static const NSInteger kLoadMaxRetries = 2;
   return nil;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)dispatchLoadedBytes:(NSInteger)bytesLoaded expected:(NSInteger)bytesExpected {
   for (TTURLRequest* request in [[_requests copy] autorelease]) {
     request.totalBytesLoaded = bytesLoaded;
@@ -106,6 +117,8 @@ static const NSInteger kLoadMaxRetries = 2;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)dispatchLoaded:(NSDate*)timestamp {
   for (TTURLRequest* request in [[_requests copy] autorelease]) {
     request.timestamp = timestamp;
@@ -119,6 +132,8 @@ static const NSInteger kLoadMaxRetries = 2;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 -(void)dispatchAuthenticationChallenge:(NSURLAuthenticationChallenge*)challenge{
   for (TTURLRequest* request in [[_requests copy] autorelease]) {
 
@@ -130,6 +145,8 @@ static const NSInteger kLoadMaxRetries = 2;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)dispatchError:(NSError*)error {
   for (TTURLRequest* request in [[_requests copy] autorelease]) {
     request.isLoading = NO;
@@ -142,7 +159,7 @@ static const NSInteger kLoadMaxRetries = 2;
   }
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 // NSURLConnectionDelegate
  
 - (void)connection:(NSURLConnection*)connection didReceiveResponse:(NSHTTPURLResponse*)response {
@@ -157,21 +174,29 @@ static const NSInteger kLoadMaxRetries = 2;
   _responseData = [[NSMutableData alloc] initWithCapacity:contentLength];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connection:(NSURLConnection*)connection didReceiveData:(NSData*)data {
   [_responseData appendData:data];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSCachedURLResponse *)connection:(NSURLConnection *)connection
     willCacheResponse:(NSCachedURLResponse *)cachedResponse {
   return nil;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten
         totalBytesWritten:(NSInteger)totalBytesWritten
         totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
   [self dispatchLoadedBytes:totalBytesWritten expected:totalBytesExpectedToWrite];
 }
- 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
   TTNetworkRequestStopped();
 
@@ -191,6 +216,8 @@ static const NSInteger kLoadMaxRetries = 2;
   TT_RELEASE_SAFELY(_connection);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connection:(NSURLConnection *)connection
     didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge{
   TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"  RECEIVED AUTH CHALLENGE LOADING %@ ", _URL);
@@ -199,6 +226,8 @@ static const NSInteger kLoadMaxRetries = 2;
                withObject: challenge];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {  
   TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"  FAILED LOADING %@ FOR %@", _URL, error);
 
@@ -219,26 +248,34 @@ static const NSInteger kLoadMaxRetries = 2;
   }
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 - (BOOL)isLoading {
   return !!_connection;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)addRequest:(TTURLRequest*)request {
   [_requests addObject:request];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)removeRequest:(TTURLRequest*)request {
   [_requests removeObject:request];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)load:(NSURL*)URL {
   if (!_connection) {
     [self connectToURL:URL];
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)loadSynchronously:(NSURL*)URL {
   // This method simulates an asynchronous network connection. If your delegate isn't being called
   // correctly, this would be the place to start tracing for errors.
@@ -270,6 +307,8 @@ static const NSInteger kLoadMaxRetries = 2;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)cancel:(TTURLRequest*)request {
   NSUInteger index = [_requests indexOfObject:request];
   if (index != NSNotFound) {
