@@ -1,5 +1,5 @@
 //
-// Copyright 2009 Facebook
+// Copyright 2009-2010 Facebook
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
 // limitations under the License.
 //
 
-#import "Three20/TTGlobalCore.h"
-#import "Three20/TTGlobalCorePaths.h"
-
-#import "Three20/TTURLRequest.h"
-#import "Three20/TTURLResponse.h"
-#import "Three20/TTURLCache.h"
+#import "Three20/TTGlobalNetwork.h"
 
 @class TTURLRequestQueue;
+@class TTURLRequest;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////
 
 @interface TTRequestLoader : NSObject {
   NSString* _URL;
@@ -53,5 +48,11 @@
 - (void)load:(NSURL*)URL;
 - (void)loadSynchronously:(NSURL*)URL;
 - (BOOL)cancel:(TTURLRequest*)request;
+
+- (NSError*)processResponse:(NSHTTPURLResponse*)response data:(id)data;
+- (void)dispatchError:(NSError*)error;
+- (void)dispatchLoaded:(NSDate*)timestamp;
+- (void)dispatchAuthenticationChallenge:(NSURLAuthenticationChallenge*)challenge;
+- (void)cancel;
 
 @end

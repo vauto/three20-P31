@@ -15,29 +15,32 @@
 //
 
 #import "Three20/TTRequestLoader.h"
-#import "Three20/TTURLRequestQueue.h"
-
-#import "Three20/TTGlobalCore.h"
-#import "Three20/TTGlobalCorePaths.h"
-
 #import "Three20/TTURLRequest.h"
+#import "Three20/TTURLRequestDelegate.h"
+#import "Three20/TTURLRequestQueue.h"
 #import "Three20/TTURLResponse.h"
-#import "Three20/TTURLCache.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-  
+#import "Three20/TTCorePreprocessorMacros.h"
+#import "Three20/TTDebug.h"
+#import "Three20/TTDebugFlags.h"
+#import "Three20/TTGlobalCore.h"
+
 static const NSInteger kLoadMaxRetries = 2;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
 @implementation TTRequestLoader
 
-@synthesize URL                = _URL;
-@synthesize requests           = _requests;
-@synthesize cacheKey           = _cacheKey;
-@synthesize cachePolicy        = _cachePolicy;
-@synthesize cacheExpirationAge = _cacheExpirationAge;
+@synthesize URL                 = _URL;
+@synthesize requests            = _requests;
+@synthesize cacheKey            = _cacheKey;
+@synthesize cachePolicy         = _cachePolicy;
+@synthesize cacheExpirationAge  = _cacheExpirationAge;
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)initForRequest:(TTURLRequest*)request queue:(TTURLRequestQueue*)queue {
   if (self = [super init]) {
     _URL = [request.URL copy];
@@ -68,15 +71,15 @@ static const NSInteger kLoadMaxRetries = 2;
   [super dealloc];
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connectToURL:(NSURL*)URL {
   TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"Connecting to %@", _URL);
   TTNetworkRequestStarted();
-
+  
   TTURLRequest* request = _requests.count == 1 ? [_requests objectAtIndex:0] : nil;
   NSURLRequest *URLRequest = [_queue createNSURLRequest:request URL:URL];
-
+  
   _connection = [[NSURLConnection alloc] initWithRequest:URLRequest delegate:self];
 }
 
@@ -108,7 +111,7 @@ static const NSInteger kLoadMaxRetries = 2;
   for (TTURLRequest* request in [[_requests copy] autorelease]) {
     request.totalBytesLoaded = bytesLoaded;
     request.totalBytesExpected = bytesExpected;
-
+    
     for (id<TTURLRequestDelegate> delegate in request.delegates) {
       if ([delegate respondsToSelector:@selector(requestDidUploadData:)]) {
         [delegate requestDidUploadData:request];
@@ -123,7 +126,7 @@ static const NSInteger kLoadMaxRetries = 2;
   for (TTURLRequest* request in [[_requests copy] autorelease]) {
     request.timestamp = timestamp;
     request.isLoading = NO;
-
+    
     for (id<TTURLRequestDelegate> delegate in request.delegates) {
       if ([delegate respondsToSelector:@selector(requestDidFinishLoad:)]) {
         [delegate requestDidFinishLoad:request];
@@ -134,9 +137,9 @@ static const NSInteger kLoadMaxRetries = 2;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
--(void)dispatchAuthenticationChallenge:(NSURLAuthenticationChallenge*)challenge{
+- (void)dispatchAuthenticationChallenge:(NSURLAuthenticationChallenge*)challenge {
   for (TTURLRequest* request in [[_requests copy] autorelease]) {
-
+    
     for (id<TTURLRequestDelegate> delegate in request.delegates) {
       if ([delegate respondsToSelector:@selector(request:didReceiveAuthenticationChallenge:)]) {
         [delegate request:request didReceiveAuthenticationChallenge:challenge];
@@ -150,7 +153,7 @@ static const NSInteger kLoadMaxRetries = 2;
 - (void)dispatchError:(NSError*)error {
   for (TTURLRequest* request in [[_requests copy] autorelease]) {
     request.isLoading = NO;
-
+    
     for (id<TTURLRequestDelegate> delegate in request.delegates) {
       if ([delegate respondsToSelector:@selector(request:didFailLoadWithError:)]) {
         [delegate request:request didFailLoadWithError:error];
@@ -159,18 +162,25 @@ static const NSInteger kLoadMaxRetries = 2;
   }
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// NSURLConnectionDelegate
- 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark -
+#pragma mark NSURLConnectionDelegate
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connection:(NSURLConnection*)connection didReceiveResponse:(NSHTTPURLResponse*)response {
   _response = [response retain];
   NSDictionary* headers = [response allHeaderFields];
   int contentLength = [[headers objectForKey:@"Content-Length"] intValue];
+  
+  TTDASSERT(0 == _queue.maxContentLength || contentLength <=_queue.maxContentLength);
   if (contentLength > _queue.maxContentLength && _queue.maxContentLength) {
     TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"MAX CONTENT LENGTH EXCEEDED (%d) %@", contentLength, _URL);
     [self cancel];
   }
-
+  
   _responseData = [[NSMutableData alloc] initWithCapacity:contentLength];
 }
 
@@ -183,15 +193,15 @@ static const NSInteger kLoadMaxRetries = 2;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSCachedURLResponse *)connection:(NSURLConnection *)connection
-    willCacheResponse:(NSCachedURLResponse *)cachedResponse {
+                  willCacheResponse:(NSCachedURLResponse *)cachedResponse {
   return nil;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connection:(NSURLConnection *)connection didSendBodyData:(NSInteger)bytesWritten
-        totalBytesWritten:(NSInteger)totalBytesWritten
-        totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
+ totalBytesWritten:(NSInteger)totalBytesWritten
+totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
   [self dispatchLoadedBytes:totalBytesWritten expected:totalBytesExpectedToWrite];
 }
 
@@ -199,19 +209,21 @@ static const NSInteger kLoadMaxRetries = 2;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
   TTNetworkRequestStopped();
-
+  
   if (_response.statusCode == 200) {
     [_queue performSelector:@selector(loader:didLoadResponse:data:) withObject:self
-      withObject:_response withObject:_responseData];
+                 withObject:_response withObject:_responseData];
   } else {
     TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"  FAILED LOADING (%d) %@", _response.statusCode, _URL);
     NSError* error = [NSError errorWithDomain:NSURLErrorDomain code:_response.statusCode
-      userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-                _response, @"response", _responseData, @"responseData", nil]];
+                                     userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                                               _response, @"response",
+                                               _responseData, @"responseData",
+                                               nil]];
     [_queue performSelector:@selector(loader:didFailLoadWithError:) withObject:self
-      withObject:error];
+                 withObject:error];
   }
-
+  
   TT_RELEASE_SAFELY(_responseData);
   TT_RELEASE_SAFELY(_connection);
 }
@@ -219,7 +231,7 @@ static const NSInteger kLoadMaxRetries = 2;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connection:(NSURLConnection *)connection
-    didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge{
+didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge{
   TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"  RECEIVED AUTH CHALLENGE LOADING %@ ", _URL);
   [_queue performSelector: @selector(loader:didReceiveAuthenticationChallenge:)
                withObject: self
@@ -230,7 +242,7 @@ static const NSInteger kLoadMaxRetries = 2;
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {  
   TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"  FAILED LOADING %@ FOR %@", _URL, error);
-
+  
   TTNetworkRequestStopped();
   
   TT_RELEASE_SAFELY(_responseData);
@@ -244,12 +256,12 @@ static const NSInteger kLoadMaxRetries = 2;
     [self load:[NSURL URLWithString:_URL]];
   } else {
     [_queue performSelector:@selector(loader:didFailLoadWithError:) withObject:self
-            withObject:error];
+                 withObject:error];
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)isLoading {
   return !!_connection;
 }
@@ -280,29 +292,29 @@ static const NSInteger kLoadMaxRetries = 2;
   // This method simulates an asynchronous network connection. If your delegate isn't being called
   // correctly, this would be the place to start tracing for errors.
   TTNetworkRequestStarted();
-
+  
   TTURLRequest* request = _requests.count == 1 ? [_requests objectAtIndex:0] : nil;
   NSURLRequest* URLRequest = [_queue createNSURLRequest:request URL:URL];
-
+  
   NSHTTPURLResponse* response = nil;
   NSError* error = nil;
   NSData* data = [NSURLConnection
-    sendSynchronousRequest: URLRequest
-         returningResponse: &response
-                     error: &error];
-
+                  sendSynchronousRequest: URLRequest
+                  returningResponse: &response
+                  error: &error];
+  
   if (nil != error) {
     TTNetworkRequestStopped();
-
+    
     TT_RELEASE_SAFELY(_responseData);
     TT_RELEASE_SAFELY(_connection);
-
+    
     [_queue performSelector:@selector(loader:didFailLoadWithError:) withObject:self
-            withObject:error];
+                 withObject:error];
   } else {
     [self connection:nil didReceiveResponse:(NSHTTPURLResponse*)response];
     [self connection:nil didReceiveData:data];
-
+    
     [self connectionDidFinishLoading:nil];
   }
 }
@@ -313,18 +325,18 @@ static const NSInteger kLoadMaxRetries = 2;
   NSUInteger index = [_requests indexOfObject:request];
   if (index != NSNotFound) {
     request.isLoading = NO;
-
+    
     for (id<TTURLRequestDelegate> delegate in request.delegates) {
       if ([delegate respondsToSelector:@selector(requestDidCancelLoad:)]) {
         [delegate requestDidCancelLoad:request];
       }
     }
-
+    
     [_requests removeObjectAtIndex:index];
   }
   if (![_requests count]) {
     [_queue performSelector:@selector(loaderDidCancel:wasLoading:) withObject:self
-            withObject:(id)!!_connection];
+                 withObject:(id)!!_connection];
     if (_connection) {
       TTNetworkRequestStopped();
       [_connection cancel];
