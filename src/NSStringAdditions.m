@@ -1,5 +1,5 @@
 //
-// Copyright 2009 Facebook
+// Copyright 2009-2010 Facebook
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 
 #import "Three20/TTDebug.h"
 #import "Three20/TTMarkupStripper.h"
+#include <libxml/parserInternals.h>
+#include <libxml/parser.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -134,6 +136,8 @@
   return [oneAlpha compare:twoAlpha];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSString*)stringByURLEncodingStringParameter
 {
 	// NSURL's stringByAddingPercentEscapesUsingEncoding: does not escape
@@ -170,6 +174,20 @@
 		resultStr = mutableStr;
 	}
 	return resultStr;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (NSString*)stringByDecodingHTMLEntities
+{
+	 xmlParserCtxtPtr ctxt = xmlNewParserCtxt();
+	 char *buffer = (char*)xmlStringDecodeEntities( ctxt, (const xmlChar *)[self UTF8String], XML_SUBSTITUTE_REF, 0, 0, 0 );
+	 NSString *decoded = [[NSString alloc] initWithUTF8String:buffer];
+	 
+	 free( buffer );
+	 xmlFreeParserCtxt( ctxt );
+	 
+	 return [decoded autorelease];
 }
 
 @end

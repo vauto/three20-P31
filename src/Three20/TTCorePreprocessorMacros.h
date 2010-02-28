@@ -1,5 +1,5 @@
 //
-// Copyright 2009 Facebook
+// Copyright 2009-2010 Facebook
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -63,7 +63,6 @@
 // Safe releases
 
 #define TT_RELEASE_SAFELY(__POINTER) { [__POINTER release]; __POINTER = nil; }
-#define TT_AUTORELEASE_SAFELY(__POINTER) { [__POINTER autorelease]; __POINTER = nil; }
 #define TT_INVALIDATE_TIMER(__TIMER) { [__TIMER invalidate]; __TIMER = nil; }
 
 // Release a CoreFoundation object safely.
