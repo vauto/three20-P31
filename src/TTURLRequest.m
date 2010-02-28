@@ -15,6 +15,7 @@
 //
 
 #import "Three20/TTURLRequest.h"
+#import "Three20/TTRequestLoader.h"
 
 #import "Three20/TTGlobalCore.h"
 
