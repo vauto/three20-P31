@@ -138,8 +138,6 @@
 		BEF6EC350F280CB300CF4096 /* ScrollViewTestController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ScrollViewTestController.h; sourceTree = "<group>"; };
 		BEF6EC360F280CB300CF4096 /* ScrollViewTestController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ScrollViewTestController.m; sourceTree = "<group>"; };
 		C649A46C113A2C8100030485 /* libxml2.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxml2.2.dylib; path = usr/lib/libxml2.2.dylib; sourceTree = SDKROOT; };
-		C6620F31109CFA5300EC35C6 /* PopUpViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PopUpViewController.h; sourceTree = "<group>"; };
-		C6620F32109CFA5300EC35C6 /* PopUpViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PopUpViewController.m; sourceTree = "<group>"; };
 		C6A0111B10AE6C8000B9EE3D /* Prime31.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; name = Prime31.bundle; path = "../../src/P31-Additions/Prime31.bundle"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -174,7 +172,6 @@
 				EA108135101B39140098AAC2 /* Models */,
 				EA108141101B39510098AAC2 /* General */,
 				BEC7875C1040A405005C00CF /* Launcher */,
-				C6620F30109CFA2F00EC35C6 /* Popup */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -264,15 +261,6 @@
 				EB4CD9FF10CA0FB300A856E5 /* UnitTests.octest */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		C6620F30109CFA2F00EC35C6 /* Popup */ = {
-			isa = PBXGroup;
-			children = (
-				C6620F31109CFA5300EC35C6 /* PopUpViewController.h */,
-				C6620F32109CFA5300EC35C6 /* PopUpViewController.m */,
-			);
-			name = Popup;
 			sourceTree = "<group>";
 		};
 		EA1080F1101B37E90098AAC2 /* Photos */ = {
