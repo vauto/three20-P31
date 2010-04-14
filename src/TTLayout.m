@@ -105,7 +105,8 @@
 
 - (CGSize)layoutSubviews:(NSArray*)subviews forView:(UIView*)view {
   CGFloat innerWidth = (view.width - _padding*2);
-  CGFloat width = ceil(innerWidth / _columnCount);
+  CGFloat useableWidth = innerWidth - ((_columnCount - 1) * _spacing);
+  CGFloat width = ceil(useableWidth / _columnCount);
   CGFloat rowHeight = 0;
   
   CGFloat x = _padding, y = _padding;
