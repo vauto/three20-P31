@@ -80,6 +80,69 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+@implementation TTCenteredFlowLayout
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+// public
+
+- (CGSize)layoutSubviews:(NSArray*)subviews forView:(UIView*)view
+{
+	if( !subviews.count )
+		return CGSizeZero;
+	
+	UIView *anyView = (UIView*)[subviews objectAtIndex:0];
+	CGSize subviewSize = anyView.frame.size;
+	CGFloat innerWidth = ( view.width - _padding * 2 );
+	
+	// How many columns can we fit?
+	int columns = 0;
+	CGFloat calculatedWidth = 0.0;
+	do
+	{
+		++columns;
+		calculatedWidth = subviewSize.width * columns + ( _spacing * ( columns - 1 ) );
+	} while( calculatedWidth < innerWidth );
+	--columns;
+	
+	CGFloat usedWidth = subviewSize.width * columns + ( _spacing * ( columns - 1 ) );
+	CGFloat startX = ( view.width - usedWidth ) / 2;
+	CGFloat rowHeight = subviewSize.height;
+	CGFloat x = startX, y = _padding;
+	CGFloat maxX = 0;
+	NSInteger column = 0;
+	
+	
+	[UIView beginAnimations:nil context:NULL];
+	[UIView setAnimationDuration:0.2];
+	
+	for( UIView *subview in subviews )
+	{
+		if( column % columns == 0 )
+		{
+			x = startX;
+			
+			if( column > 0 )
+				y += rowHeight + _spacing;
+		}
+		
+		subview.frame = CGRectMake( x, y, subviewSize.width, subviewSize.height );
+		x += subviewSize.width + _spacing;
+		
+		if( x > maxX )
+			maxX = x;
+
+		++column;
+	}
+	
+	[UIView commitAnimations];
+	
+	return CGSizeMake( maxX + _padding, y + subviewSize.height + _padding );
+}
+
+@end
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 @implementation TTGridLayout
 
 @synthesize columnCount = _columnCount, padding = _padding, spacing = _spacing;
