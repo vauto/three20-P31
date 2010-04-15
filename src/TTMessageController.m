@@ -21,11 +21,13 @@
 #import "Three20/TTMessageRecipientField.h"
 #import "Three20/TTMessageTextField.h"
 #import "Three20/TTMessageSubjectField.h"
+#import "Three20/TTTextEditor.h"
 
 #import "Three20/TTGlobalCore.h"
 #import "Three20/TTGlobalCoreLocale.h"
 #import "Three20/TTGlobalUI.h"
 #import "Three20/TTGlobalUINavigator.h"
+#import "Three20/TTGlobalStyle.h"
 
 #import "Three20/TTTableViewDataSource.h"
 #import "Three20/TTDefaultStyleSheet.h"
@@ -56,8 +58,8 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-- (id)initWithNibName:(NSString*)nibName bundle:(NSBundle*)bundle {
-  if (self = [super initWithNibName:nibName bundle:bundle]) {
+- (id)init {
+  if (self = [super init]) {
     _fields = [[NSArray alloc] initWithObjects:
                [[[TTMessageRecipientField alloc] initWithTitle: TTLocalizedString(@"To:", @"")
                                                       required: YES] autorelease],
@@ -81,12 +83,6 @@
   }
 
   return self;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (id)init {
-  return [self initWithNibName:nil bundle:nil];
 }
 
 

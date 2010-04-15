@@ -20,8 +20,6 @@
 
 @class TTStyledTextLabel;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
 /**
  * TTTableView enhances UITableView to provide support for various Three20 services.
  *
@@ -29,9 +27,10 @@
  * you want links in your labels to be touchable.
  */
 @interface TTTableView : UITableView {
-  TTStyledTextLabel* _highlightedLabel;
-  CGPoint _highlightStartPoint;
-  CGFloat _contentOrigin;
+  TTStyledTextLabel*  _highlightedLabel;
+  CGPoint             _highlightStartPoint;
+  CGFloat             _contentOrigin;
+
   BOOL _showShadows;
   BOOL _styledLabelLinkSelectionOnly;
 
@@ -40,10 +39,10 @@
   CAGradientLayer* _bottomShadow;
 }
 
-@property (nonatomic, retain) TTStyledTextLabel* highlightedLabel;
-@property (nonatomic) CGFloat contentOrigin;
-@property (nonatomic) BOOL showShadows;
-@property (nonatomic) BOOL styledLabelLinkSelectionOnly;
+@property (nonatomic, retain) TTStyledTextLabel*  highlightedLabel;
+@property (nonatomic)         CGFloat             contentOrigin;
+@property (nonatomic)         BOOL                showShadows;
+@property (nonatomic) 		  BOOL				  styledLabelLinkSelectionOnly;
 
 @end
 

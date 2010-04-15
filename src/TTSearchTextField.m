@@ -16,6 +16,9 @@
 
 #import "Three20/TTSearchTextField.h"
 
+#import "Three20/TTSearchTextFieldDelegate.h"
+#import "Three20/TTSearchTextFieldInternal.h"
+
 #import "Three20/TTGlobalUI.h"
 #import "Three20/TTGlobalUINavigator.h"
 
@@ -23,137 +26,29 @@
 #import "Three20/TTView.h"
 #import "Three20/TTDefaultStyleSheet.h"
 #import "Three20/TTTableView.h"
-#import "Three20/TTTableItemCell.h"
+#import "Three20/TTTableViewCell.h"
 #import "Three20/TTTableViewDataSource.h"
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
 static const CGFloat kShadowHeight = 24;
 static const CGFloat kDesiredTableHeight = 150;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-@interface TTSearchTextFieldInternal : NSObject <UITextFieldDelegate> {
-  TTSearchTextField* _textField;
-  id<UITextFieldDelegate> _delegate;
-}
-
-@property (nonatomic, assign) id<UITextFieldDelegate> delegate;
-
-- (id)initWithTextField:(TTSearchTextField*)textField;
-
-@end
-
-@implementation TTSearchTextFieldInternal
-
-@synthesize delegate = _delegate;
-
-- (id)initWithTextField:(TTSearchTextField*)textField {
-  if (self = [super init]) {
-    _textField = textField;
-  }
-  return self;
-}
-
-- (void)dealloc {
-  [super dealloc];
-}
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// UITextFieldDelegate
-
-- (BOOL)textFieldShouldBeginEditing:(UITextField *)textField {
-  if ([_delegate respondsToSelector:@selector(textFieldShouldBeginEditing:)]) {
-    return [_delegate textFieldShouldBeginEditing:textField];
-  } else {
-    return YES;
-  }
-}
-
-- (void)textFieldDidBeginEditing:(UITextField *)textField {
-  if ([_delegate respondsToSelector:@selector(textFieldDidBeginEditing:)]) {
-    [_delegate textFieldDidBeginEditing:textField];
-  }
-}
-
-- (BOOL)textFieldShouldEndEditing:(UITextField *)textField {
-  if ([_delegate respondsToSelector:@selector(textFieldShouldEndEditing:)]) {
-    return [_delegate textFieldShouldEndEditing:textField];
-  } else {
-    return YES;
-  }
-}
-
-- (void)textFieldDidEndEditing:(UITextField *)textField {
-  if ([_delegate respondsToSelector:@selector(textFieldDidEndEditing:)]) {
-    [_delegate textFieldDidEndEditing:textField];
-  }
-}
-
-- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range
-    replacementString:(NSString *)string {
-  if (![_textField shouldUpdate:!string.length]) {
-    return NO;
-  }
-
-  SEL sel = @selector(textField:shouldChangeCharactersInRange:replacementString:);
-  if ([_delegate respondsToSelector:sel]) {
-    return [_delegate textField:textField shouldChangeCharactersInRange:range
-      replacementString:string];
-  } else {
-    return YES;
-  }
-}
-
-- (BOOL)textFieldShouldClear:(UITextField *)textField {
-  [_textField shouldUpdate:YES];
-
-  if ([_delegate respondsToSelector:@selector(textFieldShouldClear:)]) {
-    return [_delegate textFieldShouldClear:textField];
-  } else {
-    return YES;
-  }
-}
-
-- (BOOL)textFieldShouldReturn:(UITextField *)textField {
-  BOOL shouldReturn = YES;
-  if ([_delegate respondsToSelector:@selector(textFieldShouldReturn:)]) {
-    shouldReturn = [_delegate textFieldShouldReturn:textField];
-  }
-
-  if (shouldReturn) {
-    if (!_textField.searchesAutomatically) {
-      [_textField search];
-    } else {
-      [_textField performSelector:@selector(doneAction)];
-    }
-  }
-  return shouldReturn;
-}
-
-@end
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-
 @implementation TTSearchTextField
 
-@synthesize dataSource = _dataSource, tableView = _tableView, rowHeight = _rowHeight,
-  searchesAutomatically = _searchesAutomatically, showsDoneButton = _showsDoneButton,
-  showsDarkScreen = _showsDarkScreen;
+@synthesize tableView             = _tableView;
+@synthesize rowHeight             = _rowHeight;
+@synthesize searchesAutomatically = _searchesAutomatically;
+@synthesize showsDoneButton       = _showsDoneButton;
+@synthesize showsDarkScreen       = _showsDarkScreen;
+@synthesize dataSource            = _dataSource;
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)initWithFrame:(CGRect)frame {
   if (self = [super initWithFrame:frame]) {
     _internal = [[TTSearchTextFieldInternal alloc] initWithTextField:self];
-    _dataSource = nil;
-    _tableView = nil;
-    _shadowView = nil;
-    _screenView = nil;
-    _searchTimer = nil;
-    _previousNavigationItem = nil;
-    _previousRightBarButtonItem = nil;
-    _rowHeight = 0;
-    _showsDoneButton = NO;
-    _showsDarkScreen = NO;
 
     self.autocorrectionType = UITextAutocorrectionTypeNo;
     self.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
@@ -167,9 +62,12 @@ static const CGFloat kDesiredTableHeight = 150;
 
     [super setDelegate:_internal];
   }
+
   return self;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)dealloc {
   [_dataSource.model.delegates removeObject:self];
   _tableView.delegate = nil;
@@ -180,11 +78,12 @@ static const CGFloat kDesiredTableHeight = 150;
   TT_RELEASE_SAFELY(_screenView);
   TT_RELEASE_SAFELY(_previousNavigationItem);
   TT_RELEASE_SAFELY(_previousRightBarButtonItem);
+
   [super dealloc];
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)showDoneButton:(BOOL)show {
   UIViewController* controller = [TTNavigator navigator].visibleViewController;
   if (controller) {
@@ -204,6 +103,8 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)showDarkScreen:(BOOL)show {
   if (show && !_screenView) {
     _screenView = [[UIButton buttonWithType:UIButtonTypeCustom] retain];
@@ -228,6 +129,8 @@ static const CGFloat kDesiredTableHeight = 150;
   [UIView commitAnimations];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (NSString*)searchText {
   if (!self.hasText) {
     return @"";
@@ -237,29 +140,39 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)autoSearch {
   if (_searchesAutomatically || !self.text.length) {
     [self search];
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)dispatchUpdate:(NSTimer*)timer {
   _searchTimer = nil;
   [self autoSearch];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)delayedUpdate {
   [_searchTimer invalidate];
   _searchTimer = [NSTimer scheduledTimerWithTimeInterval:0 target:self
     selector:@selector(dispatchUpdate:) userInfo:nil repeats:NO];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)hasSearchResults {
   return (![_dataSource respondsToSelector:@selector(numberOfSectionsInTableView:)]
           || [_dataSource numberOfSectionsInTableView:_tableView])
       && [_dataSource tableView:_tableView numberOfRowsInSection:0];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)reloadTable {
   [_dataSource tableViewDidLoadModel:self.tableView];
 
@@ -272,12 +185,16 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)screenAnimationDidStop {
   if (_screenView.alpha == 0) {
     [_screenView removeFromSuperview];
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)doneAction {
   [self resignFirstResponder];
 
@@ -286,25 +203,39 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// UITextField
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark -
+#pragma mark UITextField
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id<UITextFieldDelegate>)delegate {
   return _internal.delegate;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)setDelegate:(id<UITextFieldDelegate>)delegate {
   _internal.delegate = delegate;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)setText:(NSString*)text {
   [super setText:text];
   [self autoSearch];
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// UITableViewDelegate
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark -
+#pragma mark UITableViewDelegate
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath*)indexPath {
   if (_rowHeight) {
     return _rowHeight;
@@ -315,6 +246,8 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)tableView:(UITableView*)tableView didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   if ([_internal.delegate respondsToSelector:@selector(textField:didSelectObject:)]) {
     id object = [_dataSource tableView:tableView objectForRowAtIndexPath:indexPath];
@@ -326,30 +259,46 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// TTModelDelegate
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark -
+#pragma mark TTModelDelegate
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)modelDidStartLoad:(id<TTModel>)model {
   if (!_searchesAutomatically) {
     [self reloadTable];
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)modelDidFinishLoad:(id<TTModel>)model {
   [self reloadTable];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)modelDidChange:(id<TTModel>)model {
   [self reloadTable];
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)model:(id<TTModel>)model didFailLoadWithError:(NSError*)error {
   [self reloadTable];
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// UIControlEvents
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark -
+#pragma mark UIControlEvents
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)didBeginEditing {
   if (_dataSource) {
     UIScrollView* scrollView = (UIScrollView*)[self ancestorOrSelfWithClass:[UIScrollView class]];
@@ -368,6 +317,8 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)didEndEditing {
   if (_dataSource) {
     UIScrollView* scrollView = (UIScrollView*)[self ancestorOrSelfWithClass:[UIScrollView class]];
@@ -385,9 +336,14 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// public
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark -
+#pragma mark Public
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)setDataSource:(id<TTTableViewDataSource>)dataSource {
   if (dataSource != _dataSource) {
     [_dataSource.model.delegates removeObject:self];
@@ -397,6 +353,8 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (UITableView*)tableView {
   if (!_tableView) {
     _tableView = [[TTTableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
@@ -411,6 +369,8 @@ static const CGFloat kDesiredTableHeight = 150;
   return _tableView;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)setSearchesAutomatically:(BOOL)searchesAutomatically {
   _searchesAutomatically = searchesAutomatically;
   if (searchesAutomatically) {
@@ -422,10 +382,14 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)hasText {
   return self.text.length;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)search {
   if (_dataSource) {
     NSString* text = self.searchText;
@@ -433,6 +397,8 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)showSearchResults:(BOOL)show {
   if (show && _dataSource) {
     self.tableView;
@@ -464,6 +430,8 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (UIView*)superviewForSearchResults {
   UIScrollView* scrollView = (UIScrollView*)[self ancestorOrSelfWithClass:[UIScrollView class]];
   if (scrollView) {
@@ -479,6 +447,8 @@ static const CGFloat kDesiredTableHeight = 150;
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (CGRect)rectForSearchResults:(BOOL)withKeyboard {
   UIView* superview = self.superviewForSearchResults;
 
@@ -496,9 +466,12 @@ static const CGFloat kDesiredTableHeight = 150;
   return CGRectMake(0, y + self.height-1, superview.frame.size.width, tableHeight+1);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)shouldUpdate:(BOOL)emptyText {
   [self delayedUpdate];
   return YES;
 }
+
 
 @end
