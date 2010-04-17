@@ -20,6 +20,8 @@
 
 #import "Three20/TTNavigator.h"
 
+#import "Three20/UIViewAdditions.h"
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -126,7 +128,7 @@
 
 - (void)showInView:(UIView*)view animated:(BOOL)animated {
   [self viewWillAppear:animated];
-  [self.actionSheet showInView:view.window];
+  [self.actionSheet showInView: [view popupTargetView]]; // cdonnelly 2010-03-31: Open the window in its desired target view.
   [self viewDidAppear:animated];
 }
 
