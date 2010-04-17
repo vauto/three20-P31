@@ -91,7 +91,7 @@ const static CGFloat kCalloutTailHeight = 40.0;
 
 - (CGRect)calculateFrameFromOrigin:(CGPoint)originPoint
 {
-	// Grab the longestString 
+	// Grab the longestString; if none found, use a constant. 
 	NSString *longestString = nil;
 	int longestStringLength = 0;
 	for( NSString *string in _buttonTitles )
@@ -104,6 +104,9 @@ const static CGFloat kCalloutTailHeight = 40.0;
 			continue;
 		}
 	}
+    
+    if (longestString == nil)
+        longestString = @" ";
 	
 	CGSize textSize = [longestString sizeWithFont:TTSTYLEVAR(buttonFont)];
 	
