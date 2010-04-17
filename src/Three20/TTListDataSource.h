@@ -24,8 +24,8 @@
 
 @property(nonatomic,retain) NSMutableArray* items;
 
-+ (TTListDataSource*)dataSourceWithObjects:(id)object,...;
-+ (TTListDataSource*)dataSourceWithItems:(NSMutableArray*)items;
++ (TTListDataSource*)dataSourceWithObjects:(id)object,... NS_REQUIRES_NIL_TERMINATION;
++ (TTListDataSource*)dataSourceWithItems:(NSArray*)items;
 
 - (id)initWithItems:(NSArray*)items;
 
