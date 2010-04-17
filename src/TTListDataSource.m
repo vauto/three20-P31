@@ -42,7 +42,7 @@
   return [[[self alloc] initWithItems:items] autorelease];
 }
 
-+ (TTListDataSource*)dataSourceWithItems:(NSMutableArray*)items {
++ (TTListDataSource*)dataSourceWithItems:(NSArray*)items {
   return [[[self alloc] initWithItems:items] autorelease];
 }
 
@@ -107,7 +107,7 @@
 - (NSIndexPath*)indexPathOfItemWithUserInfo:(id)userInfo {
   for (NSInteger i = 0; i < _items.count; ++i) {
     TTTableItem* item = [_items objectAtIndex:i];
-    if (item.userInfo == userInfo) {
+    if ([NSObject value: item.userInfo isEqual:userInfo]) {
       return [NSIndexPath indexPathForRow:i inSection:0];
     }
   }
@@ -257,7 +257,7 @@
       NSArray* items = [_items objectAtIndex:i];
       for (NSInteger j = 0; j < items.count; ++j) {
         TTTableItem* item = [items objectAtIndex:j];
-        if (item.userInfo == userInfo) {
+        if ([NSObject value: item.userInfo isEqual:userInfo]) {
           return [NSIndexPath indexPathForRow:j inSection:i];
         }
       }
@@ -265,7 +265,7 @@
   } else {
     for (NSInteger i = 0; i < _items.count; ++i) {
       TTTableItem* item = [_items objectAtIndex:i];
-      if (item.userInfo == userInfo) {
+      if ([NSObject value: item.userInfo isEqual:userInfo]) {
         return [NSIndexPath indexPathForRow:i inSection:0];
       }
     }

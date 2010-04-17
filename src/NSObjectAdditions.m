@@ -147,4 +147,14 @@
   }
 }
 
++ (BOOL)value:(id)object1 isEqual:(id)object2 {
+  if (object1 == object2)
+    return YES;
+  if (object1 == nil)
+    return NO;
+  if (object2 == nil)
+    return NO;
+   return [object1 isEqual: object2];
+}
+
 @end

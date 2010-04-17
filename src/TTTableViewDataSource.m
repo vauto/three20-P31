@@ -270,6 +270,10 @@
   return TTLocalizedString(@"Sorry, there was an error.", @"");
 }
 
+- (NSIndexPath*)indexPathOfItemWithUserInfo:(id)userInfo {
+    return nil;
+}
+
 @end
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

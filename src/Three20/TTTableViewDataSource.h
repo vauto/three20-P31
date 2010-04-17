@@ -98,6 +98,8 @@
  */
 - (NSString*)subtitleForError:(NSError*)error;
 
+- (NSIndexPath*)indexPathOfItemWithUserInfo:(id)userInfo;
+
 @optional
 
 /**
