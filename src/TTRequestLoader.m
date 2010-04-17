@@ -139,14 +139,30 @@ static const NSInteger kLoadMaxRetries = 2;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)dispatchAuthenticationChallenge:(NSURLAuthenticationChallenge*)challenge {
-  for (TTURLRequest* request in [[_requests copy] autorelease]) {
-    
-    for (id<TTURLRequestDelegate> delegate in request.delegates) {
-      if ([delegate respondsToSelector:@selector(request:didReceiveAuthenticationChallenge:)]) {
-        [delegate request:request didReceiveAuthenticationChallenge:challenge];
-      }
+    for (TTURLRequest* request in [[_requests copy] autorelease]) {
+        
+        for (id<TTURLRequestDelegate> delegate in request.delegates) {
+            if ([delegate respondsToSelector:@selector(request:didReceiveAuthenticationChallenge:)]) {
+                [delegate request:request didReceiveAuthenticationChallenge:challenge];
+            }
+        }
     }
-  }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (NSURLRequest*)dispatchRedirectToRequest:(NSURLRequest*)redirectRequest {
+    for (TTURLRequest* request in [[_requests copy] autorelease]) {
+        
+        for (id<TTURLRequestDelegate> delegate in request.delegates) {
+            if ([delegate respondsToSelector:@selector(request:shouldRedirectToRequest:)]) {
+                if (![delegate request:request shouldRedirectToRequest: redirectRequest])
+                    return nil;
+            }
+        }
+    }
+    
+    return redirectRequest;
 }
 
 
@@ -175,7 +191,6 @@ static const NSInteger kLoadMaxRetries = 2;
   _response = [response retain];
   NSDictionary* headers = [response allHeaderFields];
   int contentLength = [[headers objectForKey:@"Content-Length"] intValue];
-  
   TTDASSERT(0 == _queue.maxContentLength || contentLength <=_queue.maxContentLength);
   if (contentLength > _queue.maxContentLength && _queue.maxContentLength) {
     TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"MAX CONTENT LENGTH EXCEEDED (%d) %@", contentLength, _URL);
@@ -210,19 +225,24 @@ totalBytesExpectedToWrite:(NSInteger)totalBytesExpectedToWrite {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
   TTNetworkRequestStopped();
-  
-  if (_response.statusCode == 200) {
-    [_queue performSelector:@selector(loader:didLoadResponse:data:) withObject:self
-                 withObject:_response withObject:_responseData];
-  } else {
-    TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"  FAILED LOADING (%d) %@", _response.statusCode, _URL);
-    NSError* error = [NSError errorWithDomain:NSURLErrorDomain code:_response.statusCode
-                                     userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
-                                               _response, @"response",
-                                               _responseData, @"responseData",
-                                               nil]];
-    [_queue performSelector:@selector(loader:didFailLoadWithError:) withObject:self
-                 withObject:error];
+    
+  switch (_response.statusCode) {
+    case 200:
+    case 301:
+    case 302:
+      [_queue performSelector:@selector(loader:didLoadResponse:data:) withObject:self
+                   withObject:_response withObject:_responseData];
+      break;
+    
+    default:
+      TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"  FAILED LOADING (%d) %@", _response.statusCode, _URL);
+      NSError* error = [NSError errorWithDomain:NSURLErrorDomain code:_response.statusCode
+                                       userInfo:[NSDictionary dictionaryWithObjectsAndKeys:
+                                                 _response, @"response",
+                                                 _responseData, @"responseData",
+                                                 nil]];
+      [_queue performSelector:@selector(loader:didFailLoadWithError:) withObject:self
+                   withObject:error];
   }
   
   TT_RELEASE_SAFELY(_responseData);
@@ -261,6 +281,18 @@ didReceiveAuthenticationChallenge:(NSURLAuthenticationChallenge *)challenge{
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (NSURLRequest*)connection:(NSURLConnection*)connection 
+            willSendRequest:(NSURLRequest*)request 
+           redirectResponse:(NSURLResponse*)response {
+  TTDCONDITIONLOG(TTDFLAG_URLREQUEST, @"  WILL SEND REQUEST %@ REDIRECT RESPONSE %@", request, response);
+
+  return [_queue performSelector: @selector(loader:willSendRequest:redirectResponse:)
+                      withObject: self
+                      withObject: request
+                      withObject: response];
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)isLoading {
