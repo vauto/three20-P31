@@ -80,6 +80,13 @@
 		6EB0117B11118052004D204C /* TTImageLayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EB0117A11118052004D204C /* TTImageLayer.h */; };
 		6EB013891112C513004D204C /* TTImageViewInternal.m in Sources */ = {isa = PBXBuildFile; fileRef = 6EB013871112C513004D204C /* TTImageViewInternal.m */; };
 		6EB0138B1112C538004D204C /* TTImageViewInternal.h in Headers */ = {isa = PBXBuildFile; fileRef = 6EB0138A1112C538004D204C /* TTImageViewInternal.h */; };
+		867A81BC117ABD8F006C1DE2 /* TTLauncherViewDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = 867A81BB117ABD8F006C1DE2 /* TTLauncherViewDelegate.h */; };
+		867A81C8117ABE0E006C1DE2 /* TTLauncherScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 867A81C7117ABE0E006C1DE2 /* TTLauncherScrollView.m */; };
+		867A81C9117ABE0E006C1DE2 /* TTLauncherScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 867A81C7117ABE0E006C1DE2 /* TTLauncherScrollView.m */; };
+		867A81CB117ABE18006C1DE2 /* TTLauncherScrollView.h in Headers */ = {isa = PBXBuildFile; fileRef = 867A81CA117ABE18006C1DE2 /* TTLauncherScrollView.h */; };
+		86C38073117AB37F0092C686 /* TTSectionedDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 86C38072117AB37F0092C686 /* TTSectionedDataSource.m */; };
+		86C38074117AB37F0092C686 /* TTSectionedDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = 86C38072117AB37F0092C686 /* TTSectionedDataSource.m */; };
+		86C38076117AB3990092C686 /* TTSectionedDataSource.h in Headers */ = {isa = PBXBuildFile; fileRef = 86C38075117AB3990092C686 /* TTSectionedDataSource.h */; };
 		BE1288060F896A0A00F65EA2 /* TTStyle.h in Headers */ = {isa = PBXBuildFile; fileRef = BE1288050F896A0A00F65EA2 /* TTStyle.h */; };
 		BE1288080F896A1900F65EA2 /* TTStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = BE1288070F896A1900F65EA2 /* TTStyle.m */; };
 		BE1288CB0F89812E00F65EA2 /* TTShape.m in Sources */ = {isa = PBXBuildFile; fileRef = BE1288CA0F89812E00F65EA2 /* TTShape.m */; };
@@ -344,6 +351,11 @@
 		6EB0117A11118052004D204C /* TTImageLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTImageLayer.h; path = Three20/TTImageLayer.h; sourceTree = "<group>"; };
 		6EB013871112C513004D204C /* TTImageViewInternal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTImageViewInternal.m; sourceTree = "<group>"; };
 		6EB0138A1112C538004D204C /* TTImageViewInternal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTImageViewInternal.h; path = Three20/TTImageViewInternal.h; sourceTree = "<group>"; };
+		867A81BB117ABD8F006C1DE2 /* TTLauncherViewDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTLauncherViewDelegate.h; path = Three20/TTLauncherViewDelegate.h; sourceTree = "<group>"; };
+		867A81C7117ABE0E006C1DE2 /* TTLauncherScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTLauncherScrollView.m; sourceTree = "<group>"; };
+		867A81CA117ABE18006C1DE2 /* TTLauncherScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTLauncherScrollView.h; path = Three20/TTLauncherScrollView.h; sourceTree = "<group>"; };
+		86C38072117AB37F0092C686 /* TTSectionedDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTSectionedDataSource.m; sourceTree = "<group>"; };
+		86C38075117AB3990092C686 /* TTSectionedDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTSectionedDataSource.h; path = Three20/TTSectionedDataSource.h; sourceTree = "<group>"; };
 		BE1288050F896A0A00F65EA2 /* TTStyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTStyle.h; path = Three20/TTStyle.h; sourceTree = "<group>"; };
 		BE1288070F896A1900F65EA2 /* TTStyle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTStyle.m; sourceTree = "<group>"; };
 		BE1288CA0F89812E00F65EA2 /* TTShape.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTShape.m; sourceTree = "<group>"; };
@@ -767,6 +779,8 @@
 				BE702EF20F43F6800028A119 /* TTTableViewDataSource.m */,
 				BE23E72A100B0A7200F40C3B /* TTListDataSource.h */,
 				BE23E72C100B0ACD00F40C3B /* TTListDataSource.m */,
+				86C38075117AB3990092C686 /* TTSectionedDataSource.h */,
+				86C38072117AB37F0092C686 /* TTSectionedDataSource.m */,
 				BED4290E0F97F5C70035B153 /* TTTableView.h */,
 				BED429100F97F5DD0035B153 /* TTTableView.m */,
 				BE7EB6540F50D339008A4B05 /* TTTableHeaderView.h */,
@@ -852,6 +866,9 @@
 		BEC787A51040A783005C00CF /* Springboard */ = {
 			isa = PBXGroup;
 			children = (
+				867A81CA117ABE18006C1DE2 /* TTLauncherScrollView.h */,
+				867A81C7117ABE0E006C1DE2 /* TTLauncherScrollView.m */,
+				867A81BB117ABD8F006C1DE2 /* TTLauncherViewDelegate.h */,
 				BEC787471040A34E005C00CF /* TTLauncherView.h */,
 				BEC787451040A33A005C00CF /* TTLauncherView.m */,
 				BEC787B41040A79F005C00CF /* TTLauncherItem.h */,
@@ -1367,6 +1384,9 @@
 				6E924D98112CAA4A00531F03 /* TTTableHeaderDragRefreshView.h in Headers */,
 				6E14D99A10E0BC8000445222 /* TTXMLParser.h in Headers */,
 				6E14DAD810E0DC7D00445222 /* TTURLXMLResponse.h in Headers */,
+				86C38076117AB3990092C686 /* TTSectionedDataSource.h in Headers */,
+				867A81BC117ABD8F006C1DE2 /* TTLauncherViewDelegate.h in Headers */,
+				867A81CB117ABE18006C1DE2 /* TTLauncherScrollView.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1583,6 +1603,8 @@
 				6E924D96112CAA3800531F03 /* TTTableHeaderDragRefreshView.m in Sources */,
 				6E14D8B210E0A8D200445222 /* TTURLXMLResponse.m in Sources */,
 				6E14D8EE10E0B60000445222 /* TTXMLParser.m in Sources */,
+				86C38073117AB37F0092C686 /* TTSectionedDataSource.m in Sources */,
+				867A81C8117ABE0E006C1DE2 /* TTLauncherScrollView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1608,6 +1630,8 @@
 				6E14D93810E0B92900445222 /* CoreXMLTests.m in Sources */,
 				6E14D96410E0BAD300445222 /* TTGlobalCorePaths.m in Sources */,
 				6E14D98E10E0BC4E00445222 /* TTXMLParser.m in Sources */,
+				86C38074117AB37F0092C686 /* TTSectionedDataSource.m in Sources */,
+				867A81C9117ABE0E006C1DE2 /* TTLauncherScrollView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

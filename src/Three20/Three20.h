@@ -81,6 +81,7 @@
 #import "Three20/TTScrollView.h"
 
 #import "Three20/TTLauncherView.h"
+#import "Three20/TTLauncherViewDelegate.h"
 #import "Three20/TTLauncherItem.h"
 
 #import "Three20/TTLabel.h"
@@ -110,6 +111,7 @@
 #import "Three20/TTTableViewDragRefreshDelegate.h"
 
 #import "Three20/TTListDataSource.h"
+#import "Three20/TTSectionedDataSource.h"
 #import "Three20/TTTableHeaderView.h"
 #import "Three20/TTTableViewCell.h"
 #import "Three20/TTTableItem.h"
