@@ -16,6 +16,8 @@
 
 #import "Three20/TTURLNavigatorPattern.h"
 
+#import "Three20/TTURLPatternInternal.h"
+
 #import "Three20/TTURLWildcard.h"
 #import "Three20/TTURLArguments.h"
 
@@ -41,18 +43,55 @@ static NSString* kUniversalURLPattern = @"*";
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @private
- */
+- (id)initWithTarget: (id)target
+                mode: (TTNavigationMode)navigationMode {
+  if (self = [super init]) {
+    _navigationMode = navigationMode;
+
+    if ([target class] == target && navigationMode) {
+      _targetClass = target;
+    } else {
+      _targetObject = target;
+    }
+  }
+
+  return self;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (id)initWithTarget:(id)target {
+  return [self initWithTarget:target mode:TTNavigationModeNone];
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (id)init {
+  return [self initWithTarget:nil];
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (void)dealloc {
+  TT_RELEASE_SAFELY(_parentURL);
+
+  [super dealloc];
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark -
+#pragma mark Private
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)instantiatesClass {
   return nil != _targetClass && TTNavigationModeNone != _navigationMode;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @private
- */
 - (BOOL)callsInstanceMethod {
   return (nil != _targetObject && [_targetObject class] != _targetObject)
          || nil != _targetClass;
@@ -60,9 +99,6 @@ static NSString* kUniversalURLPattern = @"*";
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @private
- */
 - (NSComparisonResult)compareSpecificity:(TTURLPattern*)pattern2 {
   if (_specificity > pattern2.specificity) {
     return NSOrderedAscending;
@@ -75,9 +111,6 @@ static NSString* kUniversalURLPattern = @"*";
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @private
- */
 - (void)deduceSelector {
   NSMutableArray* parts = [NSMutableArray array];
 
@@ -119,9 +152,6 @@ static NSString* kUniversalURLPattern = @"*";
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @private
- */
 - (void)analyzeArgument: (id<TTURLPatternText>)pattern
                  method: (Method)method
                argNames: (NSArray*)argNames {
@@ -141,9 +171,6 @@ static NSString* kUniversalURLPattern = @"*";
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @private
- */
 - (void)analyzeMethod {
   Class cls = [self classForInvocation];
   Method method = [self callsInstanceMethod]
@@ -178,9 +205,6 @@ static NSString* kUniversalURLPattern = @"*";
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @private
- */
 - (void)analyzeProperties {
   Class cls = [self classForInvocation];
 
@@ -201,9 +225,6 @@ static NSString* kUniversalURLPattern = @"*";
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @private
- */
 - (BOOL)setArgument: (NSString*)text
             pattern: (id<TTURLPatternText>)patternText
       forInvocation: (NSInvocation*)invocation {
@@ -253,9 +274,6 @@ static NSString* kUniversalURLPattern = @"*";
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @private
- */
 - (void)setArgumentsFromURL: (NSURL*)URL
               forInvocation: (NSInvocation*)invocation
                       query: (NSDictionary*)query {
@@ -298,52 +316,6 @@ static NSString* kUniversalURLPattern = @"*";
   if (URL.fragment && _fragment) {
     [self setArgument:URL.fragment pattern:_fragment forInvocation:invocation];
   }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark -
-#pragma mark NSObject
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (id)initWithTarget: (id)target
-                mode: (TTNavigationMode)navigationMode {
-  if (self = [super init]) {
-    _targetClass = nil;
-    _targetObject = nil;
-    _navigationMode = navigationMode;
-    _parentURL = nil;
-    _transition = 0;
-    _argumentCount = 0;
-
-    if ([target class] == target && navigationMode) {
-      _targetClass = target;
-    } else {
-      _targetObject = target;
-    }
-  }
-  return self;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (id)initWithTarget:(id)target {
-  return [self initWithTarget:target mode:TTNavigationModeNone];
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (id)init {
-  return [self initWithTarget:nil];
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)dealloc {
-  TT_RELEASE_SAFELY(_parentURL);
-  [super dealloc];
 }
 
 

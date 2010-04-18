@@ -8,6 +8,7 @@
 #import "TableItemTestController.h"
 #import "TableControlsTestController.h"
 #import "TableTestController.h"
+#import "TableWithShadowController.h"
 #import "SearchTestController.h"
 #import "MessageTestController.h"
 #import "ActivityTestController.h"
@@ -18,7 +19,7 @@
 #import "StyleTestController.h"
 #import "ButtonTestController.h"
 #import "TabBarTestController.h"
-#import "PopUpViewController.h"
+
 
 @implementation AppDelegate
 
@@ -40,6 +41,7 @@
   [map from:@"tt://tableItemTest" toViewController:[TableItemTestController class]];
   [map from:@"tt://tableControlsTest" toViewController:[TableControlsTestController class]];
   [map from:@"tt://styledTextTableTest" toViewController:[StyledTextTableTestController class]];
+  [map from:@"tt://tableWithShadow" toViewController:[TableWithShadowController class]];
   [map from:@"tt://composerTest" toViewController:[MessageTestController class]];
   [map from:@"tt://searchTest" toViewController:[SearchTestController class]];
   [map from:@"tt://activityTest" toViewController:[ActivityTestController class]];
@@ -51,9 +53,6 @@
   [map from:@"tt://imageTest2" toViewController:[TableImageTestController class]];
   [map from:@"tt://scrollViewTest" toViewController:[ScrollViewTestController class]];
   [map from:@"tt://launcherTest" toViewController:[LauncherViewTestController class]];
-	
-	// P31 Additions
-	[map from:@"p31://popupTest" toViewController:[PopUpViewController class]];
 
 
   if (![navigator restoreViewControllers]) {

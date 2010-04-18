@@ -101,9 +101,9 @@
 
 
 /**
- * Decodes any HTML entities
+ * Decodes any HTML entities manually
  */
-- (NSString*)stringByDecodingHTMLEntities;
+- (NSString*)stringByDecodingHTMLEntitiesManually;
 
 @end
 

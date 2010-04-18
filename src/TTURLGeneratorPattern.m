@@ -61,18 +61,12 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @public
- */
 - (Class)classForInvocation {
   return _targetClass;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @public
- */
 - (void)compile {
   [self compileURL];
 
@@ -93,9 +87,6 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * @public
- */
 - (NSString*)generateURLFromObject:(id)object {
   NSMutableArray* paths = [NSMutableArray array];
   NSMutableArray* queries = nil;
@@ -115,7 +106,7 @@
     }
     [queries addObject:pair];
   }
-  
+
   NSString* path = [paths componentsJoinedByString:@"/"];
   if (queries) {
     NSString* query = [queries componentsJoinedByString:@"&"];

@@ -38,6 +38,45 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+- (id)initWithNavigatorURL:(NSURL*)URL query:(NSDictionary*)query {
+  if (self = [self init]) {
+    NSURLRequest* request = [query objectForKey:@"request"];
+    if (request) {
+      [self openRequest:request];
+    } else {
+      [self openURL:URL];
+    }
+  }
+  return self;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (id)init {
+  if (self = [super init]) {
+    self.hidesBottomBarWhenPushed = YES;
+  }
+
+  return self;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+- (void)dealloc {
+  TT_RELEASE_SAFELY(_loadingURL);
+  TT_RELEASE_SAFELY(_headerView);
+
+  [super dealloc];
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark -
+#pragma mark Private
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)backAction {
   [_webView goBack];
 }
@@ -64,8 +103,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)shareAction {
   UIActionSheet* sheet = [[[UIActionSheet alloc] initWithTitle:@"" delegate:self
-    cancelButtonTitle:TTLocalizedString(@"Cancel", @"") destructiveButtonTitle:nil
-    otherButtonTitles:TTLocalizedString(@"Open in Safari", @""), nil] autorelease];
+                                             cancelButtonTitle:TTLocalizedString(@"Cancel", @"") destructiveButtonTitle:nil
+                                             otherButtonTitles:TTLocalizedString(@"Open in Safari", @""), nil] autorelease];
   [sheet showInView:self.view];
 }
 
@@ -81,90 +120,54 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark -
-#pragma mark NSObject
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (id)initWithNavigatorURL:(NSURL*)URL query:(NSDictionary*)query {
-  if (self = [self init]) {
-    NSURLRequest* request = [query objectForKey:@"request"];
-    if (request) {
-      [self openRequest:request];
-    } else {
-      [self openURL:URL];
-    }
-  }
-  return self;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (id)init {
-  if (self = [super init]) {
-    self.hidesBottomBarWhenPushed = YES;
-  }
-  return self;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)dealloc {
-  TT_RELEASE_SAFELY(_loadingURL);
-  TT_RELEASE_SAFELY(_headerView);
-  [super dealloc];
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma mark -
 #pragma mark UIViewController
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)loadView {  
+- (void)loadView {
   [super loadView];
-  
+
   _webView = [[UIWebView alloc] initWithFrame:TTToolbarNavigationFrame()];
   _webView.delegate = self;
   _webView.autoresizingMask = UIViewAutoresizingFlexibleWidth
-                              | UIViewAutoresizingFlexibleHeight;
+  | UIViewAutoresizingFlexibleHeight;
   _webView.scalesPageToFit = YES;
   [self.view addSubview:_webView];
 
   UIActivityIndicatorView* spinner = [[[UIActivityIndicatorView alloc]
-  initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite] autorelease];
+                                       initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhite] autorelease];
   [spinner startAnimating];
   _activityItem = [[UIBarButtonItem alloc] initWithCustomView:spinner];
 
   _backButton = [[UIBarButtonItem alloc] initWithImage:
-    TTIMAGE(@"bundle://Three20.bundle/images/backIcon.png")
-     style:UIBarButtonItemStylePlain target:self action:@selector(backAction)];
+                 TTIMAGE(@"bundle://Three20.bundle/images/backIcon.png")
+                                                 style:UIBarButtonItemStylePlain target:self action:@selector(backAction)];
   _backButton.tag = 2;
   _backButton.enabled = NO;
   _forwardButton = [[UIBarButtonItem alloc] initWithImage:
-    TTIMAGE(@"bundle://Three20.bundle/images/forwardIcon.png")
-     style:UIBarButtonItemStylePlain target:self action:@selector(forwardAction)];
+                    TTIMAGE(@"bundle://Three20.bundle/images/forwardIcon.png")
+                                                    style:UIBarButtonItemStylePlain target:self action:@selector(forwardAction)];
   _forwardButton.tag = 1;
   _forwardButton.enabled = NO;
   _refreshButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:
-    UIBarButtonSystemItemRefresh target:self action:@selector(refreshAction)];
+                    UIBarButtonSystemItemRefresh target:self action:@selector(refreshAction)];
   _refreshButton.tag = 3;
   _stopButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:
-    UIBarButtonSystemItemStop target:self action:@selector(stopAction)];
+                 UIBarButtonSystemItemStop target:self action:@selector(stopAction)];
   _stopButton.tag = 3;
   UIBarButtonItem* actionButton = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:
-    UIBarButtonSystemItemAction target:self action:@selector(shareAction)] autorelease];
+                                    UIBarButtonSystemItemAction target:self action:@selector(shareAction)] autorelease];
 
   UIBarItem* space = [[[UIBarButtonItem alloc] initWithBarButtonSystemItem:
-   UIBarButtonSystemItemFlexibleSpace target:nil action:nil] autorelease];
+                       UIBarButtonSystemItemFlexibleSpace target:nil action:nil] autorelease];
 
   _toolbar = [[UIToolbar alloc] initWithFrame:
-    CGRectMake(0, self.view.height - TTToolbarHeight(), self.view.width, TTToolbarHeight())];
-  _toolbar.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
+              CGRectMake(0, self.view.height - TTToolbarHeight(), self.view.width, TTToolbarHeight())];
+  _toolbar.autoresizingMask =
+  UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleWidth;
   _toolbar.tintColor = TTSTYLEVAR(toolbarTintColor);
   _toolbar.items = [NSArray arrayWithObjects:
-    _backButton, space, _forwardButton, space, _refreshButton, space, actionButton, nil];
+                    _backButton, space, _forwardButton, space, _refreshButton, space, actionButton, nil];
   [self.view addSubview:_toolbar];
 }
 
@@ -172,7 +175,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)viewDidUnload {
   [super viewDidUnload];
+
   _webView.delegate = nil;
+
   TT_RELEASE_SAFELY(_webView);
   TT_RELEASE_SAFELY(_toolbar);
   TT_RELEASE_SAFELY(_backButton);
@@ -208,14 +213,14 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
-        duration:(NSTimeInterval)duration {
+                                         duration:(NSTimeInterval)duration {
   [super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
   [self updateToolbarWithOrientation:toInterfaceOrientation];
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-- (UIView *)rotatingFooterView {
+- (UIView*)rotatingFooterView {
   return _toolbar;
 }
 
@@ -255,7 +260,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (BOOL)webView:(UIWebView*)webView shouldStartLoadWithRequest:(NSURLRequest*)request
-        navigationType:(UIWebViewNavigationType)navigationType {
+ navigationType:(UIWebViewNavigationType)navigationType {
   if ([[TTNavigator navigator].URLMap isAppURL:request.URL]) {
     [_loadingURL release];
     _loadingURL = [[NSURL URLWithString:@"about:blank"] retain];
@@ -263,7 +268,7 @@
 	  
     return NO;
   }
-  
+
   [_loadingURL release];
   _loadingURL = [request.URL retain];
   _backButton.enabled = [_webView canGoBack];
@@ -287,7 +292,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (void)webViewDidFinishLoad:(UIWebView*)webView {
   TT_RELEASE_SAFELY(_loadingURL);
-  
+
   self.title = [_webView stringByEvaluatingJavaScriptFromString:@"document.title"];
   if (self.navigationItem.rightBarButtonItem == _activityItem) {
     [self.navigationItem setRightBarButtonItem:nil animated:YES];
@@ -295,7 +300,7 @@
   [_toolbar replaceItemWithTag:3 withItem:_refreshButton];
 
   _backButton.enabled = [_webView canGoBack];
-  _forwardButton.enabled = [_webView canGoForward];    
+  _forwardButton.enabled = [_webView canGoForward];
 }
 
 
@@ -344,10 +349,10 @@
 
     if (addingHeader) {
       docView.top += headerView.height;
-      docView.height -= headerView.height; 
+      docView.height -= headerView.height;
     } else if (removingHeader) {
       docView.top -= headerView.height;
-      docView.height += headerView.height; 
+      docView.height += headerView.height;
     }
   }
 }

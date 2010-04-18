@@ -20,14 +20,25 @@
 
 #import "Three20/TTTableViewDataSource.h"
 #import "Three20/TTTableViewController.h"
+
+// Table Items
 #import "Three20/TTTableItem.h"
-#import "Three20/TTTableItemCell.h"
+#import "Three20/TTTableLinkedItem.h"
+#import "Three20/TTTableButton.h"
+#import "Three20/TTTableMoreButton.h"
+
+// Table Item Cells
+#import "Three20/TTTableMoreButtonCell.h"
+
 #import "Three20/TTTableHeaderView.h"
 #import "Three20/TTTableView.h"
 #import "Three20/TTStyledTextLabel.h"
 #import "Three20/TTNavigator.h"
 #import "Three20/TTDefaultStyleSheet.h"
 #import "Three20/TTURLRequestQueue.h"
+#import "Three20/TTURLAction.h"
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,22 +138,23 @@
 			}
 		}
 
+    if ([object isKindOfClass:[TTTableButton class]]) {
+      [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    } else if ([object isKindOfClass:[TTTableMoreButton class]]) {
+      TTTableMoreButton* moreLink = (TTTableMoreButton*)object;
+      moreLink.isLoading = YES;
+      TTTableMoreButtonCell* cell
+        = (TTTableMoreButtonCell*)[tableView cellForRowAtIndexPath:indexPath];
+      cell.animating = YES;
+      [tableView deselectRowAtIndexPath:indexPath animated:YES];
 
-		if ([object isKindOfClass:[TTTableButton class]])
-		{
-			[tableView deselectRowAtIndexPath:indexPath animated:YES];
-		}
-		else if ([object isKindOfClass:[TTTableMoreButton class]])
-		{
-			TTTableMoreButton* moreLink = (TTTableMoreButton*)object;
-			moreLink.isLoading = YES;
-			TTTableMoreButtonCell* cell	= (TTTableMoreButtonCell*)[tableView cellForRowAtIndexPath:indexPath];
-			cell.animating = YES;
-			[tableView deselectRowAtIndexPath:indexPath animated:YES];
-
-			[_controller.model load:TTURLRequestCachePolicyDefault more:YES];
-		}
-	}
+      if (moreLink.model) {
+        [moreLink.model load:TTURLRequestCachePolicyDefault more:YES];
+      } else {
+        [_controller.model load:TTURLRequestCachePolicyDefault more:YES];
+      }
+    }
+  }
 
   [_controller didSelectObject:object atIndexPath:indexPath];
 }
@@ -198,7 +210,7 @@
   [TTURLRequestQueue mainQueue].suspended = YES;
 
   [_controller didBeginDragging];
-  
+
   if ([scrollView isKindOfClass:[TTTableView class]]) {
     TTTableView* tableView = (TTTableView*)scrollView;
     tableView.highlightedLabel.highlightedNode = nil;
