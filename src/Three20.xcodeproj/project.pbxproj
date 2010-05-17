@@ -2222,8 +2222,6 @@
 				6E14D93810E0B92900445222 /* CoreXMLTests.m in Sources */,
 				6E14D96410E0BAD300445222 /* TTGlobalCorePaths.m in Sources */,
 				6E14D98E10E0BC4E00445222 /* TTXMLParser.m in Sources */,
-				86C38074117AB37F0092C686 /* TTSectionedDataSource.m in Sources */,
-				867A81C9117ABE0E006C1DE2 /* TTLauncherScrollView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2321,7 +2319,10 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = Three20_Prefix.pch;
-				HEADER_SEARCH_PATHS = "/usr/include/libxml2/**";
+				HEADER_SEARCH_PATHS = (
+					"/usr/include/libxml2/**",
+					.,
+				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Three20;
 				ZERO_LINK = NO;
