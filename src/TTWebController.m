@@ -26,6 +26,7 @@
 #import "Three20/TTURLCache.h"
 #import "Three20/TTNavigator.h"
 #import "Three20/TTURLMap.h"
+#import "Three20/TTURLRequest.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,8 +41,10 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 - (id)initWithNavigatorURL:(NSURL*)URL query:(NSDictionary*)query {
   if (self = [self init]) {
-    NSURLRequest* request = [query objectForKey:@"request"];
+    id request = [query objectForKey:@"request"];
     if (request) {
+      if ([request isKindOfClass: [TTURLRequest class]])
+        request = [(TTURLRequest*)request createNSURLRequest];
       [self openRequest:request];
     } else {
       [self openURL:URL];
