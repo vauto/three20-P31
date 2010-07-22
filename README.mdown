@@ -1,1 +1,1 @@
-This fork is no longer maintained and is superseded by "vauto's three20 fork":/vauto/three20.
+This fork is no longer maintained and is superseded by [vauto's three20 fork](/vauto/three20).
